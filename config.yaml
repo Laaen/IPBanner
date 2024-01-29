@@ -1,0 +1,13 @@
+---
+# Config file for the ip_banner
+# It works as a whitelist
+# paths => On each line the path to an existing file on your server
+# requests => The allowed requests
+
+paths:
+  - /
+  - /index.php
+  - /index.html
+requests:
+  - GET
+  - POST

@@ -1,0 +1,12 @@
+[Unit]
+Description=IPBanner service
+ 
+[Service]
+Type=simple
+
+User=root
+ 
+ExecStart=/usr/bin/ip_banner /var/log/nginx/access.log
+ 
+[Install]
+WantedBy=multi-user.target
