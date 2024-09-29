@@ -1,0 +1,17 @@
+name: ip_banner
+version: 0.1.0
+
+authors:
+  - your-name-here <Laaen@hotmail.fr>
+
+targets:
+  ip_banner:
+    main: src/ip_banner.cr
+
+crystal: '>= 1.13.3'
+
+license: MIT
+
+dependencies:
+  inotify:
+    github: xtokio/inotify
