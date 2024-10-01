@@ -55,4 +55,20 @@ describe IpBanner do
 
   end
 
+  it "works" do
+
+    spawn do
+      banner = IpBanner::IpBanner.new(["spec/test.log"], ["GET", "POST"], ["/solr/admin/info/system?wt=json", "/"])
+      banner.start
+    end
+
+    # Write to the watched file, we pause to let a chance to the watcher to get events
+    File.read_lines("spec/example_file.log").each do |line|
+      file = File.open("spec/test.log", "a")
+      file.puts(line)
+      file.close()
+      sleep 0.001
+    end
+
+  end
 end

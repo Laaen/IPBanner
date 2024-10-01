@@ -22,15 +22,22 @@ module IpBanner
       return ! @allowed_paths.includes?(path[0][1])
     end
 
+    def ban(request : String)
+      # Bans the given IP via firewalld + logs it and the incriminated request
+      # system "firewalld"
+      Log.info{"Banned"}
+    end
+
     def start
       watcher = Inotify::Watcher.new
       @files_paths.each do |f|
         watcher.watch f, Inotify::Event::Type::MODIFY.value
       end
       watcher.on_event do |event|
-        puts event.path
+        # We retreive the last line of the file
+        line = File.read_lines(event.path.not_nil!).last
+        ban(line) if forbidden_method?(line) || forbidden_path?(line)
       end
-
       sleep
     end
 
