@@ -23,9 +23,18 @@ module IpBanner
     end
 
     def ban(request : String)
-      # Bans the given IP via firewalld + logs it and the incriminated request
-      # system "firewalld"
-      Log.info{"Banned"}
+      # Bans the IP via firewalld + logs it and the incriminated request
+      
+      ip = request.split(" ").first
+
+      # For tests purposes
+      {% if flag? :test %}
+        File.write("#{__DIR__.split("/")[0..-2].join("/")}/spec/output", "#{request}\n", mode: "a")
+      {% end %}
+
+      Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\" --permanent", shell: true)
+      Log.info{"Banned IP #{ip} Request : #{request}"}
+
     end
 
     def start

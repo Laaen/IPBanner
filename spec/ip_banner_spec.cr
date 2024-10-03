@@ -58,17 +58,27 @@ describe IpBanner do
   it "works" do
 
     spawn do
-      banner = IpBanner::IpBanner.new(["spec/test.log"], ["GET", "POST"], ["/solr/admin/info/system?wt=json", "/"])
+      banner = IpBanner::IpBanner.new(["#{__DIR__}/test.log"], ["GET", "POST"], ["/solr/admin/info/system?wt=json", "/"])
       banner.start
     end
 
     # Write to the watched file, we pause to let a chance to the watcher to get events
-    File.read_lines("spec/example_file.log").each do |line|
-      file = File.open("spec/test.log", "a")
-      file.puts(line)
-      file.close()
-      sleep 0.001
+    File.read_lines("#{__DIR__}/example_file.log").each do |line|
+      File.write("#{__DIR__}/test.log", "#{line}\n", mode: "a")
+      sleep 0.5
     end
 
+    
+    # Wait some time, in real conditions it is not necessary as the main Fiber will loop indefinitely
+    # But here we need to wait or the IPs to be banned via firewalld (takes some time)
+    sleep 10
+    # Check the number of bannable requests
+    File.read_lines("#{__DIR__}/output").to_a.size.should eq(61)
+
+    # Clean
+    File.delete("#{__DIR__}/output")
+    File.delete("#{__DIR__}/test.log")
+
   end
+
 end
