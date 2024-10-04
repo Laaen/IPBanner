@@ -1,6 +1,2 @@
 version: 2.0
-shards:
-  inotify:
-    git: https://github.com/xtokio/inotify.git
-    version: 0.1.0+git.commit.0ae67dcbcf8b77bf882733a11a191c26e6402eac
-
+shards: {}

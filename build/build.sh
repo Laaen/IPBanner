@@ -3,4 +3,4 @@
 ./test.sh
 cd ..
 echo "Building"
-crystal build --release src/ip_banner.cr
+crystal build --release -Dpreview_mt src/ip_banner.cr

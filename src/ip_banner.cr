@@ -1,11 +1,16 @@
-# TODO: Write documentation for `IpBanner`
-require "inotify"
+require "log"
 
+Log.setup_from_env
+
+# TODO: Write documentation for `IpBanner`
 module IpBanner
   VERSION = "0.1.0"
 
+  Log = ::Log.for("ipbanner")
+
   class IpBanner
     def initialize(@files_paths : Array(String), @allowed_methods : Array(String), @allowed_paths : Array(String))
+      @running = true
     end
 
     def forbidden_method?(request : String) : Bool
@@ -26,29 +31,34 @@ module IpBanner
       # Bans the IP via firewalld + logs it and the incriminated request
       
       ip = request.split(" ").first
+      Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\" --permanent && firewall-cmd --reload", shell: true)
 
       # For tests purposes
       {% if flag? :test %}
         File.write("#{__DIR__.split("/")[0..-2].join("/")}/spec/output", "#{request}\n", mode: "a")
       {% end %}
 
-      Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\" --permanent", shell: true)
       Log.info{"Banned IP #{ip} Request : #{request}"}
 
     end
 
-    def start
-      watcher = Inotify::Watcher.new
-      @files_paths.each do |f|
-        watcher.watch f, Inotify::Event::Type::MODIFY.value
+    def watch_file(file_path : String)
+      # Watches a file, and bans suspicious request
+      file = File.open(file_path)
+      while 1
+        line = file.gets
+        ban(line.not_nil!) if line != nil && (forbidden_method?(line.not_nil!) || forbidden_path?(line.not_nil!))
+        Fiber.yield
       end
-      watcher.on_event do |event|
-        # We retreive the last line of the file
-        line = File.read_lines(event.path.not_nil!).last
-        ban(line) if forbidden_method?(line) || forbidden_path?(line)
-      end
-      sleep
+
     end
 
+    def start
+      @files_paths.each do |f|
+        spawn do
+          watch_file(f)
+        end
+      end
+    end
   end
 end

@@ -11,7 +11,3 @@ targets:
 crystal: '>= 1.13.3'
 
 license: MIT
-
-dependencies:
-  inotify:
-    github: xtokio/inotify
