@@ -31,7 +31,7 @@ module IpBanner
       # Bans the IP via firewalld + logs it and the incriminated request
       
       ip = request.split(" ").first
-      Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\" --permanent && firewall-cmd --reload", shell: true)
+      Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\"", shell: true)
 
       # For tests purposes
       {% if flag? :test %}
@@ -50,7 +50,6 @@ module IpBanner
         ban(line.not_nil!) if line != nil && (forbidden_method?(line.not_nil!) || forbidden_path?(line.not_nil!))
         Fiber.yield
       end
-
     end
 
     def start
