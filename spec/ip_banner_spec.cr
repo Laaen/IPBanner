@@ -73,7 +73,10 @@ describe IpBanner do
     # But here we need to wait or the IPs to be banned via firewalld (takes some time)
     sleep 5
     # Check the number of bannable requests
-    File.read_lines("#{__DIR__}/output").to_a.uniq.size.should eq(61)
+    bannable_req = File.read_lines("#{__DIR__}/output").to_a.uniq
+    bannable_req.size.should eq(61)
+    # Check if ban was successful (we remove duplicate IPs from bannable requests)
+    `sudo firewall-cmd --list-rich-rules`.chomp.split("\n").size.should eq(bannable_req.map{|r| r.split(" ").first}.uniq.size)
 
     # Clean
     File.delete("#{__DIR__}/output")
