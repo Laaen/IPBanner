@@ -1,0 +1,10 @@
+files:
+  - log_path: "spec/test.log"
+    allowed_paths: 
+      - "/solr/admin/info/system?wt=json"
+      - "/"
+    allowed_methods:
+      - "GET"
+      - "POST"
+    log_type: "nginx"
+  
