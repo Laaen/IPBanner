@@ -1,4 +1,5 @@
 require "log"
+require "./request.cr"
 
 Log.setup_from_env
 
@@ -9,55 +10,54 @@ module IpBanner
   Log = ::Log.for("ipbanner")
 
   class IpBanner
-    def initialize(@files_paths : Array(String), @allowed_methods : Array(String), @allowed_paths : Array(String))
+    def initialize(@files_paths : Hash(String, LogType), @allowed_methods : Array(String), @allowed_paths : Array(String))
+      # files_path Hash{log_path => LogType}
       @running = true
     end
 
-    def forbidden_method?(request : String) : Bool
+    def forbidden_method?(method : String) : Bool
       # Returns a bool depending on if the request is allowed or not (true if not allowed and false otherwise)
-      method = request.scan(/"([A-Z]{3,}) .*HTTP.*"/)
       return true if method.size == 0
-      return ! @allowed_methods.includes?(method[0][1])
+      return ! @allowed_methods.includes?(method)
     end
 
-    def forbidden_path?(request : String) : Bool
+    def forbidden_path?(path : String) : Bool
       # Returns a bool depending on if the path is allowed or not (true if not allowed and false otherwise)
-      path = request.scan(/".*? (.*) HTTP.*"/)
       return true if path.size == 0
-      return ! @allowed_paths.includes?(path[0][1])
+      return ! @allowed_paths.includes?(path)
     end
 
-    def ban(request : String)
-      # Bans the IP via firewalld + logs it and the incriminated request
+    def ban(ip : String)
+      # Bans the IP via firewalld + logs it
       
-      ip = request.split(" ").first
       Process.new("firewall-cmd --add-rich-rule=\"rule family=ipv4 source address=#{ip} reject\"", shell: true)
-
-      # For tests purposes
-      {% if flag? :test %}
-        File.write("#{__DIR__.split("/")[0..-2].join("/")}/spec/output", "#{request}\n", mode: "a")
-      {% end %}
-
-      Log.info{"Banned IP #{ip} Request : #{request}"}
+      Log.info{"Banned IP #{ip}"}
 
     end
 
-    def watch_file(file_path : String)
+    def watch_file(file_path : String, log_type : LogType)
       # Watches a file, and bans suspicious request
       file = File.open(file_path)
       while 1
         line = file.gets
-        ban(line.not_nil!) if line != nil && (forbidden_method?(line.not_nil!) || forbidden_path?(line.not_nil!))
+        if line != nil
+          request = Request.new(line.not_nil!, log_type)
+          ban(request.ip) if forbidden_method?(request.method) || forbidden_path?(request.path)
+        end
         Fiber.yield
       end
     end
 
     def start
-      @files_paths.each do |f|
+      @files_paths.each do |path, log_type|
         spawn do
-          watch_file(f)
+          watch_file(path, log_type)
         end
       end
     end
   end
 end
+
+# Parse the command args
+# Create instance
+# Start
