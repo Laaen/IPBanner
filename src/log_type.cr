@@ -6,11 +6,14 @@ module IpBanner
         end
     end
 
+    class Custom < LogType
+
+    end
+
     class LogNginx < LogType
         def initialize
             super(/^(.*?) -/, /"([A-Z]{3,}) .*HTTP.*"/, /".*? (.*) HTTP.*"/)
         end
     end
-
 
 end
