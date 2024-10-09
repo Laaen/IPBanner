@@ -12,8 +12,6 @@ module IpBanner
 
   Log = ::Log.for("ipbanner")
 
-  LogType_hash = {"nginx" => LogNginx}
-
   class IpBanner
 
     @config : YAML::Any
@@ -31,10 +29,23 @@ module IpBanner
         begin
           YAML.parse(File.read("/etc/ip_banner/ip_banner.yaml"))
         rescue File::NotFoundError
-          STDERR.puts("COnfig file ot found in /etc/ip_banner/ip_banner.yaml")
+          STDERR.puts("Config file ot found at /etc/ip_banner/ip_banner.yaml")
           exit(80)
         end
       {% end %}
+    end
+
+    private def getLogType(config : YAML::Any) : LogType
+      # Gets and returns a LogType instance for the given string, exits if error
+      case config["log_type"].as_s
+      when "custom"
+        LogType.new(Regex.new(config["ip_regex"].as_s), Regex.new(config["method_regex"].as_s), Regex.new(config["path_regex"].as_s))
+      when "nginx"
+        LogType.new(/^(.*?) -/, /"([A-Z]{3,}) .*HTTP.*"/, /".*? (.*) HTTP.*"/)
+      else
+        STDERR.puts("The log type #{config["log_type"].as_s} does not exist")
+        exit(81)
+      end
     end
 
     def start
@@ -43,8 +54,13 @@ module IpBanner
         spawn do
           allowed_paths = config["allowed_paths"].as_a.map{|v| v.as_s}
           allowed_methods = config["allowed_methods"].as_a.map{|v| v.as_s}
-          log_type = LogType_hash[config["log_type"].as_s]
-          watcher = Watcher.new(config["log_path"].as_s, log_type.new, allowed_paths, allowed_methods)
+          begin
+            log_type = getLogType(config)
+          rescue
+            STDERR.puts("Error while getting the LogType, unknown type : #{config["log_type"].as_s}")
+            exit(81)
+          end
+          watcher = Watcher.new(config["log_path"].as_s, log_type, allowed_paths, allowed_methods)
           watcher.start
         end
       end
