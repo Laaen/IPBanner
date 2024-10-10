@@ -1,5 +1,5 @@
 files:
-  - log_path: "spec/test.log"
+  - log_path: "spec/test_1.log"
     allowed_paths: 
       - "/solr/admin/info/system?wt=json"
       - "/"
@@ -10,4 +10,12 @@ files:
     ip_regex: "^(.*?) -"
     method_regex: "\"([A-Z]{3,}) .*HTTP.*\""
     path_regex: "\".*? (.*) HTTP.*\""
-  
+
+  - log_path: "spec/test_2.log"
+    allowed_paths: 
+      - "/solr/admin/info/system?wt=json"
+      - "/"
+    allowed_methods:
+      - "GET"
+      - "POST"
+    log_type: "nginx"
