@@ -1,17 +1,18 @@
 require "log"
 require "./request.cr"
-require "./log_type.cr"
+require "./log_format.cr"
 require "./watcher.cr"
 require "yaml"
 
 Log.setup_from_env
 
-# TODO: Write documentation for `IpBanner`
+# Watches log files from webservers, and bans IPs of request which try to do perform not allowed methods, or to access
+# not allowed paths
 module IpBanner
-  VERSION = "0.1.0"
-
+  VERSION = "0.5.0"
   Log = ::Log.for("ipbanner")
 
+  # This class 
   class IpBanner
 
     @config : YAML::Any
@@ -35,15 +36,15 @@ module IpBanner
       {% end %}
     end
 
-    private def getLogType(config : YAML::Any) : LogType
-      # Gets and returns a LogType instance for the given string, exits if error
-      case config["log_type"].as_s
+    private def getLogFormat(config : YAML::Any) : LogFormat
+      # Gets and returns a LogFormat instance for the given string, exits if error
+      case config["log_format"].as_s
       when "custom"
-        LogType.new(Regex.new(config["ip_regex"].as_s), Regex.new(config["method_regex"].as_s), Regex.new(config["path_regex"].as_s))
+        LogFormat.new(Regex.new(config["ip_regex"].as_s), Regex.new(config["method_regex"].as_s), Regex.new(config["path_regex"].as_s))
       when "nginx"
-        LogType.new(/^(.*?) -/, /"([A-Z]{3,}) .*HTTP.*"/, /".*? (.*) HTTP.*"/)
+        LogFormat.new(/^(.*?) -/, /"([A-Z]{3,}) .*HTTP.*"/, /".*? (.*) HTTP.*"/)
       else
-        STDERR.puts("The log type #{config["log_type"].as_s} does not exist")
+        STDERR.puts("The log type #{config["log_format"].as_s} does not exist")
         exit(81)
       end
     end
@@ -55,12 +56,12 @@ module IpBanner
           allowed_paths = config["allowed_paths"].as_a.map{|v| v.as_s}
           allowed_methods = config["allowed_methods"].as_a.map{|v| v.as_s}
           begin
-            log_type = getLogType(config)
+            log_format = getLogFormat(config)
           rescue
-            STDERR.puts("Error while getting the LogType, unknown type : #{config["log_type"].as_s}")
+            STDERR.puts("Error while getting the log format, unknown format : #{config["log_format"].as_s}")
             exit(81)
           end
-          watcher = Watcher.new(config["log_path"].as_s, log_type, allowed_paths, allowed_methods)
+          watcher = Watcher.new(config["log_path"].as_s, log_format, allowed_paths, allowed_methods)
           watcher.start
         end
       end

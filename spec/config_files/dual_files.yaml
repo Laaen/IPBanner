@@ -6,7 +6,7 @@ files:
     allowed_methods:
       - "GET"
       - "POST"
-    log_type: "custom"
+    log_format: "custom"
     ip_regex: "^(.*?) -"
     method_regex: "\"([A-Z]{3,}) .*HTTP.*\""
     path_regex: "\".*? (.*) HTTP.*\""
@@ -18,4 +18,4 @@ files:
     allowed_methods:
       - "GET"
       - "POST"
-    log_type: "nginx"
+    log_format: "nginx"

@@ -1,12 +1,13 @@
 module IpBanner
 
+
+  # A Request is an object which encapsulates the method, path and ip of a HTTP request
   class Request
-    # A request, exposes its method, path, ip and body
-    # It is parsed depending on the used webserver (given as the log_type parameter)
 
-    getter :ip, :path, :method, :request
+    getter :ip, :path, :method
 
-    def initialize(@request : String, @log_type : LogType)
+    # Creates a new `Request` instance from the given string and parses it using the given `LogFormat`
+    def initialize(@request : String, @log_format : LogFormat)
       @method = ""
       @path = ""
       @ip = ""
@@ -23,10 +24,10 @@ module IpBanner
     end
 
     private def parse
-      # Gets the IP, method and path of a request depending on the log_type
-        @ip = self.scan_or_str(@request, @log_type.ip_regex)
-        @path = self.scan_or_str(@request, @log_type.path_regex)
-        @method = self.scan_or_str(@request, @log_type.method_regex)
+      # Gets the IP, method and path of a request depending on the log_format
+        @ip = self.scan_or_str(@request, @log_format.ip_regex)
+        @path = self.scan_or_str(@request, @log_format.path_regex)
+        @method = self.scan_or_str(@request, @log_format.method_regex)
     end
 
   end

@@ -1,7 +1,6 @@
 require "./spec_helper"
 require "../src/request.cr"
-require "../src/log_type.cr"
-require "file_utils"
+require "../src/log_format.cr"
 
 describe IpBanner do
 

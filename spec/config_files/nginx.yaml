@@ -6,5 +6,5 @@ files:
     allowed_methods:
       - "GET"
       - "POST"
-    log_type: "nginx"
+    log_format: "nginx"
   

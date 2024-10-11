@@ -1,21 +1,30 @@
 require "./request.cr"
-require "./log_type.cr"
+require "./log_format.cr"
 
 module IpBanner
 
+    # Watcher instances loop to get the last line of a log file, and bans the IP of the corresponding request
+    # depending on the given rules
     class Watcher
-        # Reads the last line of the log file, and bans IPs depending on configuration given to it
 
-        def initialize(@log_path : String, @log_type : LogType, @allowed_paths : Array(String), @allowed_methods : Array(String))
+        # Instanciates a Watcher object
+        # 
+        # ```
+        # log_format = LogFormat.new(...)
+        # watcher = Watcher.new("./test.log", log_format, ["/", "/index.php"], ["GET", "POST"])
+        # watcher.start
+        # ```
+        def initialize(@log_path : String, @log_format : LogFormat, @allowed_paths : Array(String), @allowed_methods : Array(String))
         end
 
+        # Fiber looping to get the last line of `log_path`, the last line is converted to a `Request` object,
+        # if its path or mathod is not in the allowed lists, its IP is banned via firewalld
         def start
-            # Infinite loop, reads the last line of the @log_path file and bans its IP if applicable
             file = File.open(@log_path)
             while 1
               line = file.gets
               if line != nil
-                request = Request.new(line.not_nil!, @log_type)
+                request = Request.new(line.not_nil!, @log_format)
                 ban(request.ip) if forbidden_method?(request.method) || forbidden_path?(request.path)
               end
               Fiber.yield
