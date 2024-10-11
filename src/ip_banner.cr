@@ -12,11 +12,12 @@ module IpBanner
   VERSION = "0.5.0"
   Log = ::Log.for("ipbanner")
 
-  # This class 
+  
   class IpBanner
 
     @config : YAML::Any
 
+    # Creates a new instance of IpBanner, then loads the config file at /etc/ip_banner/ip_banner.yaml
     def initialize
       @running = true
       @config = load_config()
@@ -49,8 +50,8 @@ module IpBanner
       end
     end
 
+    # Creates a `Watcher` for every file specified in the config file at /etc/ip_banner/ip_banner.yaml 
     def start
-      # For each file specified in the config, creates a Watcher and starts it
       @config["files"].as_a.each do |config|
         spawn do
           allowed_paths = config["allowed_paths"].as_a.map{|v| v.as_s}
