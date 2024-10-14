@@ -19,7 +19,10 @@ Or, download in releases
 ## Usage
 
 Create a config file at /etc/ip_banner/ip_banner.yaml  
-Execute the binary : sudo ./ip_banner  
+Execute the binary : 
+```
+sudo ./ip_banner  
+```
 If you want to log banned IPs :  
 ```
 sudo LOG_LEVEL=INFO ./ip_banner >> path_to_log_file
