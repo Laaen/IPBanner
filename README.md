@@ -11,7 +11,7 @@ Clone and build :
 git clone https://github.com/Laaen/IPBanner.git
 cd IPBanner/build
 chmod u+x ./build.sh
-./build.sh
+sudo ./build.sh
 ```
 
 Or, download in releases
