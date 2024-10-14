@@ -1,6 +1,6 @@
 # ip_banner
 
-Watches webservers files and bans undesired requests
+Watches webservers files and bans undesired requests  
 Uses firewalld to block IPs
 
 ## Installation
