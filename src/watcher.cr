@@ -20,9 +20,14 @@ module IpBanner
         # Fiber looping to get the last line of `log_path`, the last line is converted to a `Request` object,
         # if its path or mathod is not in the allowed lists, its IP is banned via firewalld
         def start
-            file = File.open(@log_path)
+            begin
+                file = File.open(@log_path)
+            rescue
+                STDERR.puts("Error : Log file #{@log_path} can't be opened")
+                return
+            end
             while 1
-              line = file.gets
+              line = file.not_nil!.gets
               if line != nil
                 request = Request.new(line.not_nil!, @log_format)
                 ban(request.ip) if forbidden_method?(request.method) || forbidden_path?(request.path)
